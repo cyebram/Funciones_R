@@ -1,0 +1,227 @@
+---
+title: "Funciones. Primera parte"
+output: html_document
+date: "27 de febrero del 2025"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+```
+
+
+# Vectores
+
+El tipo de objeto básico de R es el vector. La propiedad fundamental es que los elementos de un vector son objetos de la misma clase. La función `c()` es utilizada para crear objetos **c**oncatenando elementos, o bien, un vector vacío se puede crear con la función `vector()`.
+
+```{r}
+x1 <- c(0.25, 0.25, 200, 32555)
+x1
+class(x1)
+```
+
+
+```{r}
+x2 <- c(TRUE, FALSE, T, T, F, F)
+x2
+class(x2)
+```
+
+
+```{r}
+x3 <- -5:15
+x3
+class(x3)
+```
+
+
+```{r}
+x4 <- c(9+1i, 4-5i, 16)
+x4
+class(x4)
+```
+
+
+```{r}
+x5 <- c("a", "b", "j", "l", "v")
+x5
+class(x5)
+```
+
+
+Veamos qué sucede al mezclar objetos de dos clases diferentes en un vector.
+
+```{r}
+v <- c(1.9, 2, "d", "a")
+v
+class(v)
+```
+
+
+```{r}
+v <- c(TRUE, 3, 6, FALSE)
+v
+class(v)
+```
+
+
+```{r}
+v <- c(TRUE, "a", FALSE, "f")
+v
+class(v)
+```
+
+
+Cuando se mezclan objetos de diferentes clases en un vector se produce una *coerción implícita* para que todos los elementos del vector sean de la misma clase.
+
+A los objetos en R se puede aplicar la *coerción explícita* en una clase por medio de las funciones `as.*` .
+
+```{r}
+z <- 0:10
+z
+class(z)
+```
+
+```{r}
+as.numeric(z)
+```
+
+
+```{r}
+as.logical(z)
+```
+
+
+```{r}
+as.character(z)
+```
+
+
+En ocasiones R no puede llevar a cabo la coerción y generará valores `NA` (not available).
+
+```{r}
+x <- c("a", "b", "c", "d")
+x
+```
+
+
+```{r}
+as.numeric(x)
+```
+
+
+```{r}
+as.logical(x)
+```
+
+
+```{r}
+as.complex(x)
+```
+
+
+
+# Listas
+
+Las listas son un tipo especial de vectores que pueden tener elementos de diferentes clases, se pueden crear por medio de la función `list()`, la cual tiene un número arbitrario de argumentos.
+
+```{r}
+my_list <- list(1, "a", TRUE, 8+8i, c(5,5,5,5), matrix(1:6, nrow=2, ncol=3))
+my_list
+```
+
+Los elementos de una lista se pueden nombrar.
+
+```{r}
+my_list <- list("Entero"=1, "Letra"="a", "Logico"=TRUE, "Complejo"=8+8i, "Vector"=c(5,5,5,5), "Matriz"=matrix(1:6, nrow=2, ncol=3))
+my_list
+names(my_list)
+```
+
+
+
+El operador `[[` es utilizado para extraer elementos de una lista. El operador `$` extrae elementos de una lista utilizando el nombre del elemento, su semántica es similar a la de `[[` .
+
+
+# Funciones
+
+Las funciones en R es un código reutilizable, se definen utilizando la instrucción `function()` y también son almacenadas como objetos cuya clase es "function". La estructura general de una función es de la siguiente forma:
+
+```{r}
+function_name <- function(arg1, arg2, ...){
+  # Cuerpo de la función : Ejecuta alguna acción manipulando los argumentos
+  return(valor_de_salida) # Regresa un valor (una lista, gráfica, data frame ...), en ocasiones no es necesario incluirlo
+}
+```
+
+
+A continuación se define una función que no tiene argumentos y no lleva a cabo acción alguna.
+
+```{r}
+funcion_vacia <- function(){
+  # Esta es una función vacía
+}
+
+class(funcion_vacia)
+
+# Ejecutamos la función
+
+funcion_vacia()
+```
+
+
+
+A lo largo del curso ya hemos trabajado con algunas funciones ya definidas. Veamos los argumentos de las siguientes funciones
+
+* `seq`
+
+
+
+* `rnorm`
+
+
+
+
+# Ejemplos funciones
+
+
+
+## Área de un círculo.
+
+Sin utilizar `return()`, el *valor de retorno* de una función es siempre la última expresión que se evalúa.
+
+
+
+
+## Contar palabras en un texto
+
+Utilizando `return()`
+
+
+
+## Función que evalúa la función $f(x)=11x^3+6x^2-6x-2$
+
+
+
+## Función que grafica una función en un intervalo dado
+
+
+
+## Función que grafica una función en un intervalo dado con valores por defecto
+
+
+
+## ¿Y si queremos cambiar el color?
+
+Existe un argumento especial en R conocido como el argumento `. . .` , el cual indica un número variable de argumentos que generalmente serán argumentos de otras funciones. Es utilizado a menudo cuando se extiende o se hace uso de otra función y no se desea copiar sus argumentos.
+
+
+
+## Función cuyo resultado es una lista
+
+Crear una función cuyo argumento sea un vector numérico y devuelve una lista cuyos elementos sean las medidas de tendencia central, la desviación estándar y una gráfica del histograma.
+
+
+
+
