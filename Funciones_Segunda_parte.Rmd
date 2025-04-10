@@ -1,0 +1,215 @@
+---
+title: "Funciones. Segunda parte"
+date: "10 de abril del 2025"
+output: 
+  html_document:
+    theme: cerulean
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+library(ISLR2)
+library(plotly)
+```
+
+# Funciones para la exploración de datos
+
+Trabajaremos con el conjunto de datos `OJ` del package `ISLR2`, cuya descripción general es la siguiente:
+
+The data contains 1070 purchases where the customer either purchased Citrus Hill or Minute Maid Orange Juice. A number of characteristics of the customer and product are recorded.
+
+Se sugiere consultar la ayuda para identificar las variables y el tipo de cada una.
+
+```{r}
+data(OJ)
+glimpse(OJ)
+```
+
+Algunas de las variables están almacenadas como tipo numérico (`dbl`), pero realmente son clases de una variable cualitativa (por ejemplo `StoreID`). A continuación se cambia el tipo.
+
+
+```{r}
+OJ$StoreID <- factor(OJ$StoreID)
+OJ$SpecialCH <- factor(OJ$SpecialCH)
+OJ$SpecialMM <- factor(OJ$SpecialMM)
+OJ$STORE <- factor(OJ$STORE)
+```
+
+
+Verificamos:
+
+```{r}
+glimpse(OJ)
+```
+
+
+## Frecuencias de compras
+
+
+```{r}
+juice_colors <- c("CH"= "firebrick1", "MM" = "orange2")
+
+
+ggplot(OJ)+
+  geom_bar(aes(Purchase, fill=Purchase), show.legend=FALSE, color="black")+
+  scale_fill_manual(values= juice_colors)+
+  labs(x="Purchase", y="Frecuencia")+
+  theme_bw()+
+  theme(
+        axis.text.x=element_text(size=13),
+        axis.text.y=element_text(size=13),
+        axis.title.x = element_text(face="bold", size=14),
+        axis.title.y = element_text(face="bold", size=14)
+        )
+```
+
+## Frecuencias de StoreID
+
+
+```{r}
+store_colors <- c("1"= "darkred", "2"= "dodgerblue3" , "3"= "darkcyan" , "4"= "forestgreen", "7"="goldenrod4")
+
+
+ggplot(OJ)+
+  geom_bar(aes(StoreID, fill=StoreID), show.legend=FALSE, color="black")+
+  scale_fill_manual(values= store_colors)+
+  labs(x="StoreID", y="Frecuencia")+
+  theme_bw()+
+  theme(
+        axis.text.x=element_text(size=13),
+        axis.text.y=element_text(size=13),
+        axis.title.x = element_text(face="bold", size=14),
+        axis.title.y = element_text(face="bold", size=14)
+        )
+```
+
+
+
+## Distribución de variables numéricas por grupos.
+
+
+```{r}
+
+densidad_graficas <- function(df, var_cualitativa, colores){
+  var_num <- df |> dplyr::select(where(is.numeric)) |> names()
+  graficas <- list()
+  for (j in var_num) {
+    graficas[[j]] <- local({
+      j <- j
+      ggplot(df)+
+      geom_density(aes(eval(as.name(j)), fill=eval(as.name(var_cualitativa))), color="black", alpha=0.5)+
+      labs(x=j, fill=var_cualitativa)+
+      scale_fill_manual(values= colores)+
+      theme_bw()+
+        theme(
+        axis.text.x=element_text(size=11),
+        axis.text.y=element_text(size=11),
+        axis.title.x = element_text(face="bold", size=12),
+        axis.title.y = element_text(face="bold", size=12)
+        )
+    })
+  }
+  
+ return(graficas) 
+}
+
+```
+
+
+
+
+
+```{r}
+densidad_graficas(OJ, "Purchase", juice_colors)
+```
+
+
+
+# Múltiples ANOVA's
+
+
+```{r}
+juice_anova <- function(df){
+var_num <- df |> dplyr::select(where(is.numeric)) |> names()
+data_p_values <- tibble(Variable= character(),  Valor_p= numeric())
+
+for(k in var_num){
+  data_p_prev <- tibble(Variable=k, 
+                        Valor_p=summary(aov(eval(as.name(k)) ~ Purchase, data=OJ, na.action=na.omit))[[1]][["Pr(>F)"]][1])
+   data_p_values<- bind_rows(data_p_values, data_p_prev)
+}
+
+return(data_p_values)
+}
+
+```
+
+
+
+```{r}
+juice_anova(OJ)
+```
+
+# Estimación de una integral por el método de Montecarlo.
+
+Desarrollamos una función para estimar la integral:
+
+\begin{equation}
+\int_a^b f(x)\,dx
+\end{equation}
+
+donde $f(x)\geq 0$ para $x\in[a,b]$
+
+
+Consideremos la distribución normal estándar en $[-1,1]$
+
+```{r}
+ggplot()+
+  geom_function(fun= dnorm, xlim=c(-4, 4), color="firebrick", linewidth=1.2)+
+  stat_function(fun=dnorm, geom="area", xlim=c(-1,1), fill="firebrick", alpha=0.5)+
+theme_bw()+
+        theme(
+        axis.text.x=element_text(size=11),
+        axis.text.y=element_text(size=11),
+        axis.title.x = element_text(face="bold", size=12),
+        axis.title.y = element_text(face="bold", size=12)
+        )
+```
+
+
+
+
+
+
+
+```{r}
+montecarlo_integral <- function(f, a, b, y_max, eps=0.1, N=5000){
+  val_x <- runif(N, a, b)
+  val_y <- runif(N, 0, y_max)
+  valores_in <- val_y<=f(val_x)
+  
+  grafica <- ggplot()+
+    geom_point(aes(val_x, val_y, color=valores_in), size=2, alpha=0.5)+
+    geom_function(fun= f, color="firebrick", xlim=c(a-eps,b+eps), linewidth=1.5)+
+    theme_bw()
+  
+  
+  integral_estimada <- sum(valores_in)/N * (b-a)*y_max
+  resultados <- list("grafica"= grafica, "integral" = integral_estimada)
+  return(resultados)
+}
+
+```
+
+
+```{r}
+montecarlo_integral(dnorm, -1, 1, 0.4, eps=1)
+```
+
+
+
+
+
+
